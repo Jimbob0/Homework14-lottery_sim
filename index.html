@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title></title>
+	<script src="https://code.jquery.com/jquery-3.1.0.js" integrity="sha256-slogkvB1K3VOkzAI8QITxV3VzpOnkeNVsKvtkYLMjfk=" crossorigin="anonymous"></script>
+</head>
+<body>
+<!-- # Lottery Sim (with Ajax!)
+
+## Specification
+
+Build a webpage which does the following:
+
+* The user starts with $10 in virtual money.
+* The user enters 4 distinct numbers between 1 and 10, inclusive. Then they press a button which costs them $2
+* Normal random numbers aren't good enough for us! Let's use random.org's random number generator, found at
+	https://www.random.org/integer-sets/?sets=1&num=4&min=1&max=10&seqnos=on&commas=on&sort=on&order=index&format=plain&rnd=new
+ which generates 4 random numbers between 1 and 10. Make AJAX calls to that address to generate four random distinct numbers.
+* The user wins $4 if they match 2 numbers, $8 if they match three numbers, and $40 if they match all four.
+
+## Details
+
+1. Players cannot go into debt. Make sure the player has the money to pay for the lottery ticket. Display an error message if the user has run out of money.
+2. Players should be able to play the same numbers over and over, but can change them if they want.
+3. There is no upper limit to the amount you can win.
+4. Make sure the user has entered valid numbers before they are allowed to play. Display an error message if the user has entered an invalid number.
+5. Display an error message if the user has entered two of the same number
+
+## Above and Beyond
+
+1. Make the page beautiful
+2. Allow the player to purchase more than one "ticket" before rolling the numbers.
+3. Display an animation when the player rolls new numbers.
+4. Use localstorage to keep track of the current high score.
+
+
+## Hint
+
+There are many ways for the user to input some numbers, here are two examples:
+
+Inputs
+
+    <input id="num1" />
+	...
+	var num1 = document.getElementById("num1").value;
+
+Inputs with JQuery
+
+	<input id="num1" />
+	...
+	var num1 = $('#num1').val();
+
+Prompt
+
+	var numbers = prompt("Enter your numbers");
+
+-->
+	<script type="text/javascript">
+		function getData(){
+			$.get("https://www.random.org/integer-sets/?sets=1&num=4&min=1&max=10&seqnos=on&commas=on&sort=on&order=index&format=plain&rnd=new", function(randomSet){
+				var dataNums = randomSet.split(":")[1];
+				dataNums = dataNums.split(",");
+				for (var i in dataNums){
+					dataNums[i] = parseFloat(dataNums[i]);
+				}
+				document.getElementById('winningNums').innerHTML = dataNums;
+				findResults(getInput(),dataNums);
+			});
+		}
+		function getInput(){
+			var inputNums = [
+			parseFloat(document.getElementById("num1").value),
+			parseFloat(document.getElementById("num2").value),
+			parseFloat(document.getElementById("num3").value),
+			parseFloat(document.getElementById("num4").value)
+			];
+			return inputNums;
+		}
+		function findResults (input,data){
+			var matchNum = 0;
+			for (var i in input){
+				for (var x in data){
+					if (input[i] == data[x]){
+						matchNum += 1;
+					}
+				}
+			}
+			for (var i = 0; i < input.length; i++){
+				for (var x = i + 1; x < input.length; x++){
+					if (input[i]==input[x]){
+						return alert("You must input 4 DISTINCT numbers");
+					}
+				}
+			}
+			for (i = 0; i < input.length; i++){
+				if (input[i] > 0 && input[i] < 11){
+				} else{
+					return alert("Invalid input. Please enter numbers between 1 and 10");
+				}
+			}
+			if (winnings < 2){
+				return alert("You are out of money. Please come back again");
+			}
+			winnings -= 2;
+			if (matchNum === 0){
+				document.getElementById("results").innerHTML = "You have no matches. Try again";
+			}else if (matchNum === 1){
+				document.getElementById("results").innerHTML = "One Match. So Close!";
+			}else if (matchNum === 2){
+				winnings += 4;
+				document.getElementById("results").innerHTML = "2 Matches! You win $4!";
+			}else if (matchNum === 3){
+				winnings += 8;
+				document.getElementById("results").innerHTML = "3 Matches! You win $8!";
+			}else if (matchNum === 4){
+				winnings += 40;
+				document.getElementById("results").innerHTML = "4 Matches! $40 Jackpot!";
+			}
+			console.log(winnings);
+			document.getElementById("money").innerHTML = "$"+winnings;
+		}
+		var winnings = 10;
+	</script>
+	<div>Your Account:
+		<div id="money">$10</div>
+	</div>
+	<div>Test Your Luck! Pick 4 distinct numbers from 1 to 10
+		<input id="num1" />
+		<input id="num2" />
+		<input id="num3" />
+		<input id="num4" />
+		<button type="button" onclick="getData()">$2 per play</button>
+	</div>
+	<div>The winning numbers are:
+		<div id="winningNums"></div>
+	</div>
+	<div id="results"></div>
+</body>
+</html>
